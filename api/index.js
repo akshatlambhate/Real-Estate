@@ -12,7 +12,7 @@ mongoose.connect(process.env.MONGO).then(()=>{
     console.log(err);
 })
 
-
+// import express
 const app = express();
 app.use(express.json());
 app.listen(3000,()=>{
@@ -21,6 +21,7 @@ app.listen(3000,()=>{
 
 }
 )
+
 
 app.use('/api/user',userRouter)
 app.use('/api/auth',authRouter)
