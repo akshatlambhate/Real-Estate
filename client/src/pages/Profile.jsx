@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useRef } from 'react'
-import { updateUserStart, updateUserFailure, updateUserSuccess } from '../redux/user/userSlice';
+import { updateUserStart, updateUserFailure, updateUserSuccess, deleteUserFailure, deleteUserStart, deleteUserSuccess } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 
 function Profile() {
@@ -24,16 +24,35 @@ function Profile() {
           },
           body: JSON.stringify(formData),
         });
-        const data = await res.json();
+           const data = await res.json();
        if (data.success===false) {
         dispatch(updateUserFailure(data.message));
         return;
        }
-       dispatch(updateUserSuccess(data));
+       dispatch(deleteUserSuccess(data));
        setUpdateSuccess(true);
        } catch (error) {
            dispatch(updateUserFailure(error.message));
        }
+
+     }
+     const handleDeleteUser =async()=>{
+      try {
+        dispatch(deleteUserStart());
+        const res = await fetch(`/api/user/delete/${currentUser._id}`,{ 
+          method:'DELETE',
+        });
+        const data= await res.json();
+        if(data.success ===false){
+          dispatch(deleteUserFailure(error.message));
+          return;
+        };
+        dispatch(deleteUserSuccess(data));
+        
+      } catch (error) {
+        dispatch(deleteUserFailure(error.message))
+        
+      }
 
      }
   return (
@@ -48,7 +67,7 @@ function Profile() {
         <button  disabled={loading} className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95'> {loading ?'Loading...':'UPDATE'}</button>
       </form>
        <div className='flex justify-between mt-5 mx-2'> 
-        <span className='text-red-700 cursor-pointer '>Delete Account</span>
+        <span className='text-red-700 cursor-pointer ' onClick={handleDeleteUser}>Delete Account</span>
         <span className='text-red-700 cursor-pointer '>sign-out </span>
        </div>
         <p>{error ? error : ''}</p>
