@@ -1,8 +1,72 @@
 import React, { useState } from 'react';
+import { app } from '../firebase';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 
 export default function CreateListing() {
     const [files, setFiles] = useState([]);
+    const [imageUploadError, setimageUploadError] = useState(null);
+    const [uploading, setUploading] = useState(false);
+const [formData, setformData] = useState({
+    imageUrls: [],
+})
+console.log(formData)
 
+    const handleImageSubmit =()=>{
+     if(files.length >0 && files.length + formData.imageUrls.length<7){
+        setUploading(true);
+        setimageUploadError(false);
+        const promises =[];
+
+        for (let i = 0; i < files.length; i++) {
+               promises.push(storeImage(files[i]));
+        }
+        Promise.all(promises).then((urls)=>{
+            setformData({...formData,imageUrls: formData.imageUrls.concat(urls),     
+            });
+    
+            setimageUploadError(false);
+            setUploading(false);
+        }).catch((err)=>{
+        setimageUploadError("Image Upload Failed (2 MB Max per Image)");
+        setUploading(false);
+
+     });
+     }
+     else{
+        setimageUploadError("you can only upload 6 Images");
+        setUploading(false);
+     }
+
+    }
+    const storeImage =async(file)=>{
+        return new Promise ((resolve,reject)=>{
+            const storage = getStorage(app);
+            const fileName = new Date().getTime() + file.name;
+            const storageRef = ref(storage,fileName);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            uploadTask.on('state_changed',
+                (snapshot)=>{
+                    const progress = (snapshot.bytesTransferred/snapshot.totalBytes) *100;
+                    console.log(`upload is ${progress} % done`)
+                },
+                (error) =>{
+                    reject(error)
+                },
+                ()=>{
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL)=>{
+                        resolve (downloadURL)
+
+                    })
+                }
+            )
+        })
+    }
+     const handelRemoveImage =(index)=>{
+        setformData({
+            ...formData, 
+            imageUrls: formData.imageUrls.filter((_,i)=>i!==index),
+        });
+    };
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
@@ -114,9 +178,20 @@ export default function CreateListing() {
           </p>
           <div className="flex gap-4">
             <input onChange={(e)=>setFiles(e.target.files)} className='p-3 border border-gray-300 rounded w-full' type="file" id='images' accept='image/*' multiple />
+            <button type='button' onClick={handleImageSubmit} className='p-3 bg-green-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80 disabled:bg-white disabled:text-green-700' disabled={uploading}>{uploading ?"Uploading" :"Upload"}</button>
           </div>
+          <p className='text-red-700'>{imageUploadError && imageUploadError}</p>
+          {
+            formData.imageUrls.length  > 0 && formData.imageUrls.map((url,index)=>(
+                <div key={url} className="flex justify-between p-3 border items-center">
+                <img src={url} alt='listing Image'  className='w-20 h-20 object-contain rounded-lg'/>
+                <button type='button' onClick={()=>handelRemoveImage(index)} className='p-3 text-red-700 rounded-lg uppercase hover:opacity-90'>Delete</button>
+                </div>
+            ))
+          }
         <button className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>Create Listing</button>
         </div>
+       
       </form>
     </main>
   );
