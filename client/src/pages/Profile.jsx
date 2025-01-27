@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import {Link} from 'react-router-dom';
 import {getDownloadURL, getStorage, ref, uploadBytesResumable} from 'firebase/storage'
 import { app } from '../firebase';
+
 function Profile() {
   const dispatch = useDispatch();
   const fileRef = useRef(null);
@@ -169,8 +170,8 @@ function Profile() {
                 <Link className='text-slate-500 font-semibold flex-1 hover: underline truncate'> <p to={`/listing/${listing._id}` }>{listing.name}</p> </Link>
                 <div className="flex flex-col items-center">
                   <button onClick={()=>{handleListingDelete(listing._id)}} className='text-red-700'>Delete</button>
-                    <button className='text-green-700'>edit</button>
-                  
+                   <Link to={`/update-listing/${listing._id}`}> <button className='text-green-700'>edit</button>
+                  </Link> 
                 </div>
 
             
