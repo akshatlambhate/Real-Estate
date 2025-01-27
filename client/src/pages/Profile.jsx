@@ -162,7 +162,7 @@ function Profile() {
              <p className='text-red-600 font-bold text-2xl'>{showListingError ? 'Error Showing Listings' : ''}</p>
                   <div  className='felx flex-col gap-4'>
                     <h1 className=" text-center text-3xl font-semibold ">Your Listings</h1>
-{userListings && userListings.length >0 && userListings.map((listing)=>(
+                     {userListings && userListings.length >0 && userListings.map((listing)=>(
 
               <div key={listing._id} className=" border rounded-lg p-3 flex justify-between items-center mt-5">
                 <Link to={`/listing/${listing._id}`}>
