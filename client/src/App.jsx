@@ -8,6 +8,7 @@ import Header from "./components/Header";
 import './index.css'; 
 import SignOut from "./pages/SignOut.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
+import CreateListing from "./pages/CreateListing.jsx";
 function App() {
  
   return (
@@ -21,6 +22,7 @@ function App() {
       <Route path="/about" element={<About />}></Route>
       <Route element={<PrivateRoute/>}>
       <Route path="/profile" element={<Profile />}></Route>
+      <Route path="/create-listing" element={<CreateListing />}></Route>
       </Route>
 
     </Routes>
