@@ -10,6 +10,7 @@ import SignOut from "./pages/SignOut.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import CreateListing from "./pages/CreateListing.jsx";
 import UpdateListing from "./pages/UpdateListing.jsx";
+import Listing from "./pages/Listing.jsx";
 function App() {
  
   return (
@@ -26,6 +27,7 @@ function App() {
       <Route path="/create-listing" element={<CreateListing />}></Route>
       <Route path="/update-listing/:listingId" element={<UpdateListing />}></Route>
       </Route>
+      <Route path="/listing/:listingId" element={<Listing />}></Route>
 
     </Routes>
     
