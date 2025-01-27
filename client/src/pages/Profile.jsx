@@ -1,15 +1,50 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useRef } from 'react'
 import { updateUserStart, updateUserFailure, updateUserSuccess, deleteUserFailure, deleteUserStart, deleteUserSuccess, logOutUserStart, logOutUserSuccess, logOUtUserFailure } from '../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
 import {Link} from 'react-router-dom';
+import {getDownloadURL, getStorage, ref, uploadBytesResumable} from 'firebase/storage'
+import { app } from '../firebase';
 function Profile() {
   const dispatch = useDispatch();
   const fileRef = useRef(null);
+  const [file, setFile] = useState(undefined);
+  const [filePerc, setFilePerc] = useState(0);
+  const [fileUploadError, setFileUploadError] = useState(false);
+  useEffect(() => {
+    if(file){
+      handleFileUpload(file);
+    }
+  }, [file]);
+  const handleFileUpload =(file)=>{
+    const storage = getStorage(app);
+     const fileName = new Date().getTime() + file.name;
+     const storageRef = ref(storage, fileName);
+     const uploadTask = uploadBytesResumable(storageRef,file);
+
+     uploadTask.on('state_changed',(snapshot)=>{
+      const progress =(snapshot.bytesTransferred /snapshot.totalBytes)*100;
+       setFilePerc(Math.round(progress))
+     },
+     (error)=>{
+      setFileUploadError(true);
+     },
+     ()=>{
+      getDownloadURL(uploadTask.snapshot.ref).then
+      ((downloadURL) =>{
+        setformData({...formData, avatar: downloadURL});
+      });
+     }
+    );
+
+  }
+  
      const {currentUser, loading , error} = useSelector((state) =>state.user.user)
+
      const [formData, setformData] = useState({});
      const [updateSuccess, setUpdateSuccess] = useState(false);
+     console.log(formData)
      const handleChange=(e)=>{
        setformData({...formData , [e.target.id]:e.target.value});
      }
@@ -73,8 +108,9 @@ function Profile() {
     <div className=' p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center'>Profile</h1>
       <form  onSubmit={handleSubmit} className='flex flex-col gap-5' >
-        <input type="file"  ref={fileRef} hidden accept='image/*'/>
-        <img onClick={()=>fileRef.current.click()} src={currentUser.avatar} className='rounded-full h-24 w-24 object-cover curser-pointer self-center mt-2' alt="profile" />
+        <input type="file" onChange={(e)=>{setFile(e.target.files[0])}}  ref={fileRef} hidden accept='image/*'/>
+        <img onClick={()=>fileRef.current.click()} src={formData.avatar|| currentUser.avatar} className='rounded-full h-24 w-24 object-cover curser-pointer self-center mt-2' alt="profile" />
+        <p className='text-sm self-center'>{fileUploadError? (<span className='text-red-700'>Error Image Upload (image must be less than 2 MB)</span>) : filePerc > 0 && filePerc < 100 ? (<span className='text-slate-700'>{`Uploading ${filePerc} %`} </span>) : filePerc ===100 ?(<span className='text-green-700'>Image Uploaded Successfully</span>) : "" }</p>
         <input type="text" defaultValue={currentUser.username}  onChange={handleChange} placeholder='username' className='border p-3 rounded-lg' id='username' />
         <input type="text" defaultValue={currentUser.email} onChange={handleChange} placeholder='email' className='border p-3 rounded-lg' id='email' />
         <input type="password" onChange={handleChange} placeholder='password' className='border p-3 rounded-lg' id='password' />
